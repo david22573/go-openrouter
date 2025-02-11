@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -16,26 +15,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Define structs for the request body
-type RequestBody struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
-}
-
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-// Response struct for parsing the API response
-type Response struct {
-	Choices []struct {
-		Message struct {
-			Content string `json:"content"`
-		} `json:"message"`
-	} `json:"choices"`
-}
-
 var models = []string{
 	"google/gemini-2.0-flash-thinking-exp:free",
 }
@@ -43,7 +22,7 @@ var models = []string{
 var wg sync.WaitGroup
 
 // Function to get the response from the OpenRouter.ai API
-func PromptAI() string {
+func PromptAI(question string) string {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err)
@@ -54,26 +33,10 @@ func PromptAI() string {
 		log.Fatal("OPENROUTER_API_KEY not found in environment variables")
 	}
 
-	var filename string
-	quizTemplateFile := "data/quiz-template.json"
-
-	flag.StringVar(&filename, "p", "", "Read file to prompt openrouter.ai for response")
-	flag.Parse()
-
-	if filename == "" {
-		panic(errors.New("no filename provided"))
-	}
-
-	file, err := os.ReadFile(filename)
-	qfile, err := os.ReadFile(quizTemplateFile)
-	if err != nil {
-		log.Fatal("Error: ", err)
-	}
-	content := string(file) + "\n" + string(qfile)
-	res, err := queryModel(context.Background(), apiKey, models[0], content)
+	res, err := queryModel(context.Background(), apiKey, models[0], question)
 
 	if err != nil {
-		res, err = queryModel(context.Background(), apiKey, models[1], content)
+		res, err = queryModel(context.Background(), apiKey, models[1], question)
 		if err != nil {
 			log.Fatal("Error: ", err)
 		}

@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	client "github.com/david22573/go-openrouter/src"
+	"github.com/david22573/go-openrouter/src/client"
 )
 
 func main() {
-	fmt.Println(client.PromptAI())
+	fmt.Println(client.PromptAI("Hello, how are you today?"))
 }
